@@ -9,7 +9,7 @@ import Typography from '../Typography';
 const EmptyStudies = ({ className }) => {
   return (
     <div className={classnames('inline-flex flex-col items-center', className)}>
-      <Icon
+      {/* <Icon
         name="magnifier"
         className="mb-4"
       />
@@ -18,7 +18,7 @@ const EmptyStudies = ({ className }) => {
         variant="h5"
       >
         {'No studies available'}
-      </Typography>
+      </Typography> */}
     </div>
   );
 };

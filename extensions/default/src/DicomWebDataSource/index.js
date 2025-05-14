@@ -60,14 +60,21 @@ function createDicomWebApi(dicomWebConfig, userAuthenticationService) {
 
       dicomWebConfigCopy = JSON.parse(JSON.stringify(dicomWebConfig));
 
-      getAuthrorizationHeader = () => {
-        const xhrRequestHeaders = {};
-        const authHeaders = userAuthenticationService.getAuthorizationHeader();
-        if (authHeaders && authHeaders.Authorization) {
-          xhrRequestHeaders.Authorization = authHeaders.Authorization;
-        }
-        return xhrRequestHeaders;
-      };
+      // ***** DiangoShare --- Hide this authentication fetch related endpoints
+      // getAuthrorizationHeader = () => {
+      //   const xhrRequestHeaders = {};
+      //   const authHeaders = userAuthenticationService.getAuthorizationHeader();
+      //   if (authHeaders && authHeaders.Authorization) {
+      //     xhrRequestHeaders.Authorization = authHeaders.Authorization;
+      //   }
+      //   return xhrRequestHeaders;
+      // };
+
+      // ***** Djangoshare -- Configure custom authentication related header
+      const basicAuth = 'Basic ' + btoa('omfradiology:omfradiology@1234') ;
+      getAuthrorizationHeader = () => ({
+        Authorization: basicAuth,
+      });
 
       generateWadoHeader = () => {
         let authorizationHeader = getAuthrorizationHeader();

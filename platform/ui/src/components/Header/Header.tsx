@@ -8,6 +8,7 @@ import Svg from '../Svg';
 import Icon from '../Icon';
 import IconButton from '../IconButton';
 import Dropdown from '../Dropdown';
+import DiangoShareLogo from '../../assets/icons/diango-share.png';
 
 function Header({
   children,
@@ -56,7 +57,11 @@ function Header({
             </div>
           </div> */}
           <div className = "cloudimts-title">
-            Cloudimts
+            <img src={DiangoShareLogo} alt="Cloudimts" style={{
+              width: '100px',
+              marginLeft: '10px',
+            }} />
+            {/* Cloudimts */}
           </div>
         </div>
         <div className="flex items-center dicom-image-viewer-option-menu-div">{children}</div>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta
+      name="theme-color"
+      content="#000000"
+    />
+    <meta
+      name="mobile-web-app-capable"
+      content="yes"
+    />
+    <meta
+      name="application-name"
+      content="Cloudimts Viewer"
+    />
+    <meta
+      name="apple-mobile-web-app-capable"
+      content="yes"
+    />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta
+      name="apple-mobile-web-app-title"
+      content="Cloudimts Viewer"
+    />
+    <meta
+      name="msapplication-TileColor"
+      content="#fff"
+    />
+    <script type="text/javascript">
+      console.time('scriptToView');
+      window.PUBLIC_URL = '<%= PUBLIC_URL %>';
+    </script>
+    <link
+      rel="manifest"
+      href="<%= PUBLIC_URL %>manifest.json"
+    />
+    <link
+      rel="icon"
+      type="image/jpeg"
+      href="https://res.cloudinary.com/dryhptx96/image/upload/v1715699852/cloudimts_evortl.jpg"
+    />
+    <link
+      rel="shortcut icon"
+      type="image/jpeg"
+      href="https://res.cloudinary.com/dryhptx96/image/upload/v1715699852/cloudimts_evortl.jpg"
+    />
+    <link
+      rel="yandex-tableau-widget"
+      href="<%= PUBLIC_URL %>assets/yandex-browser-manifest.json"
+    />
+
+    <!-- Built with: https://polyfill.io/v3/url-builder/ -->
+    <!-- Targets IE11 -->
+    <!-- <script
+    src="https://polyfill.io/v3/polyfill.min.js?flags=gated&features=default%2CObject.values%2CArray.prototype.flat%2CObject.entries%2CSymbol%2CArray.prototype.includes%2CString.prototype.repeat%2CArray.prototype.find"></script>!-->
+    <script
+      rel="preload"
+      as="script"
+      type="text/javascript"
+      src="<%= PUBLIC_URL %>app-config.js"
+    ></script>
+      <script
+        rel="preload"
+        as="script"
+        type="module"
+        src="<%= PUBLIC_URL %>init-service-worker.js"
+      ></script>
+      <title>DiangoShare</title>
+      <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+      />
+      <link
+        href="https://fonts.googleapis.com/css?family=Inter:100,300,400,500,700&display=swap"
+        rel="stylesheet"
+        rel="preload"
+        as="style"
+      />
+
+    <!-- EXTENSIONS -->
+    <!-- <script type="text/javascript" src="path/to/some-extension.js"></script>
+
+    <script>
+      // If configuration file is a JS Object:
+      window.config.extensions = [SomeExtension];
+
+      // If configuration file is a JS Function:
+      window.config = () => {
+        return {
+          extensions: [SomeExtension]
+        };
+      };
+    </script> -->
+
+    <style>
+      @media only screen and (max-width: 600px) {
+        .items-stretch  {
+          overflow-y: auto !important;
+          display: block !important;
+          height: 98vh !important;
+        }
+
+        .items-stretch > div:first-child {
+          max-width: 98vw !important;
+          width: 96vw !important;
+          height: fit-content !important;
+        }
+
+        .items-start{
+          display: none !important;
+        }
+
+        .ohif-thumbnail-viewes-list{
+          display: flex !important ;
+          overflow-x: auto !important;
+          height: fit-content !important ;
+        }
+
+        .thumbnail-image-class{
+          height: 180px !important ;
+          width: 52vw !important ;
+        }
+
+        .thumbnail-image{
+          height: 180px !important ;
+          width: 52vw !important ;
+        }
+
+        .dicom-image-viewer-main-div{
+          width: 94vw !important ;
+          margin-left: auto !important ;
+          margin-right: auto !important ;
+          margin-top: -150px !important ;
+        }
+
+        .dicom-image-viewer-option-menu-div{
+          display: none !important ;
+        }
+
+        .recent-all-option-menu-list{
+          display: none !important ;
+        }
+      }
+
+      .cloudimts-icon{
+        height: 40px ;
+        width: 40px ;
+      }
+
+      .cloudimts-title{
+        font-weight: 600;
+        color: #fff;
+      }
+
+
+    </style>
+  </head>
+
+  <body>
+    <noscript> You need to enable JavaScript to run this app. </noscript>
+    <div id="react-portal"></div>
+    <div id="root">
+    </div>
+  </body>
+</html>

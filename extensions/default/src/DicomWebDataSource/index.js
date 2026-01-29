@@ -60,21 +60,26 @@ function createDicomWebApi(dicomWebConfig, userAuthenticationService) {
 
       dicomWebConfigCopy = JSON.parse(JSON.stringify(dicomWebConfig));
 
-      // ***** DiangoShare --- Hide this authentication fetch related endpoints
-      // getAuthrorizationHeader = () => {
-      //   const xhrRequestHeaders = {};
-      //   const authHeaders = userAuthenticationService.getAuthorizationHeader();
-      //   if (authHeaders && authHeaders.Authorization) {
-      //     xhrRequestHeaders.Authorization = authHeaders.Authorization;
-      //   }
-      //   return xhrRequestHeaders;
-      // };
+      /**
+       * DiangoShare custom auth header
+       * - Uses token from sessionStorage key: `diagnotoken`
+       * - Falls back to OHIF's userAuthenticationService (if available) when token is missing
+       */
+      getAuthrorizationHeader = () => {
+        const token = sessionStorage.getItem('diagnotoken');
+        if (token) {
+          return {
+            Authorization: `Bearer ${token}`,
+          };
+        }
 
-      // ***** Djangoshare -- Configure custom authentication related header
-      const basicAuth = 'Basic ' + btoa('omfradiology:omfradiology@1234') ;
-      getAuthrorizationHeader = () => ({
-        Authorization: basicAuth,
-      });
+        const authHeaders = userAuthenticationService?.getAuthorizationHeader?.();
+        if (authHeaders && authHeaders.Authorization) {
+          return { Authorization: authHeaders.Authorization };
+        }
+
+        return {};
+      };
 
       generateWadoHeader = () => {
         let authorizationHeader = getAuthrorizationHeader();
@@ -95,7 +100,7 @@ function createDicomWebApi(dicomWebConfig, userAuthenticationService) {
         url: dicomWebConfig.qidoRoot,
         staticWado: dicomWebConfig.staticWado,
         singlepart: dicomWebConfig.singlepart,
-        headers: userAuthenticationService.getAuthorizationHeader(),
+        headers: getAuthrorizationHeader(),
         errorInterceptor: errorHandler.getHTTPErrorHandler(),
       };
 
@@ -103,7 +108,7 @@ function createDicomWebApi(dicomWebConfig, userAuthenticationService) {
         url: dicomWebConfig.wadoRoot,
         staticWado: dicomWebConfig.staticWado,
         singlepart: dicomWebConfig.singlepart,
-        headers: userAuthenticationService.getAuthorizationHeader(),
+        headers: getAuthrorizationHeader(),
         errorInterceptor: errorHandler.getHTTPErrorHandler(),
       };
 

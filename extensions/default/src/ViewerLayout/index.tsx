@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { metaData } from '@cornerstonejs/core';
 
 import { SidePanel, ErrorBoundary, LoadingIndicatorProgress } from '@ohif/ui';
 import { ServicesManager, HangingProtocolService, CommandsManager } from '@ohif/core';
@@ -23,8 +24,38 @@ function ViewerLayout({
 }): React.FunctionComponent {
   const [appConfig] = useAppConfig();
 
-  const { hangingProtocolService } = servicesManager.services;
+  const { hangingProtocolService, uiNotificationService } = servicesManager.services;
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(appConfig.showLoadingIndicator);
+  const [isAttachingImage, setIsAttachingImage] = useState(false);
+  const [hasDiagnoToken, setHasDiagnoToken] = useState(false);
+
+  // Check for diagnotoken in session storage
+  useEffect(() => {
+    const checkToken = () => {
+      const token = sessionStorage.getItem('diagnotoken');
+      setHasDiagnoToken(!!token);
+    };
+
+    // Check initially
+    checkToken();
+
+    // Listen for storage changes (in case token is added/removed)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'diagnotoken') {
+        checkToken();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also check periodically in case token is set in same window
+    const interval = setInterval(checkToken, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   /**
    * Set body classes (tailwindcss) that don't allow vertical
@@ -138,6 +169,114 @@ function ViewerLayout({
                   commandsManager={commandsManager}
                 />
               </ErrorBoundary>
+              {/* Attach Image in Report Button - Only show if diagnotoken exists */}
+              {hasDiagnoToken && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+                  <button
+                    onClick={async () => {
+                      if (isAttachingImage) {
+                        return; // Prevent multiple clicks
+                      }
+
+                      try {
+                        const config = (window as any).config;
+                        if (!config || !config.attachImageInReport) {
+                          uiNotificationService.show({
+                            title: 'Error',
+                            message: 'Attach image function not found in configuration',
+                            type: 'error',
+                            duration: 5000,
+                          });
+                          return;
+                        }
+
+                        setIsAttachingImage(true);
+
+                        // Get current DICOM instance ID, study ID, and series ID
+                        let instanceId = null;
+                        let studyId = null;
+                        let seriesId = null;
+
+                        try {
+                          const { viewportGridService } = servicesManager.services;
+                          const activeViewportId = viewportGridService.getActiveViewportId();
+
+                          if (!activeViewportId) {
+                            throw new Error('No active viewport found');
+                          }
+
+                          const { cornerstoneViewportService } = servicesManager.services;
+                          const viewport =
+                            cornerstoneViewportService.getCornerstoneViewport(activeViewportId);
+
+                          if (!viewport) {
+                            throw new Error('Viewport not available');
+                          }
+
+                          const imageId = viewport.getCurrentImageId();
+                          if (!imageId) {
+                            throw new Error('No image loaded in viewport');
+                          }
+
+                          // Get SOPInstanceUID, StudyInstanceUID, and SeriesInstanceUID from imageId
+                          const instance = metaData.get('instance', imageId);
+                          if (instance) {
+                            instanceId = instance.SOPInstanceUID || null;
+                            studyId = instance.StudyInstanceUID || null;
+                            seriesId = instance.SeriesInstanceUID || null;
+                          }
+
+                          // Validate that we have at least the instance ID
+                          if (!instanceId) {
+                            throw new Error('Could not retrieve DICOM instance information');
+                          }
+
+                          // Call the API
+                          await config.attachImageInReport(instanceId, studyId, seriesId);
+
+                          uiNotificationService.show({
+                            title: 'Success',
+                            message: 'Image attached to report successfully',
+                            type: 'success',
+                            duration: 5000,
+                          });
+                        } catch (err) {
+                          console.error('Error getting DICOM IDs or attaching image:', err);
+                          uiNotificationService.show({
+                            title: 'Error',
+                            message:
+                              err.message ||
+                              'Failed to attach image in report. Please try again.',
+                            type: 'error',
+                            duration: 7000,
+                          });
+                        } finally {
+                          setIsAttachingImage(false);
+                        }
+                      } catch (error) {
+                        console.error('Failed to attach image in report:', error);
+                        uiNotificationService.show({
+                          title: 'Error',
+                          message:
+                            error.message ||
+                            'An unexpected error occurred while attaching image',
+                          type: 'error',
+                          duration: 7000,
+                        });
+                        setIsAttachingImage(false);
+                      }
+                    }}
+                    disabled={isAttachingImage}
+                    className={`attach-image-in-report-button px-3 py-1.5 text-white rounded-md shadow-lg transition-colors duration-200 text-sm font-medium ${
+                      isAttachingImage
+                        ? 'bg-blue-400 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {isAttachingImage ? 'Attaching...' : 'Attach Image in Report'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           {rightPanelComponents.length ? (

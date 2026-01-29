@@ -68,7 +68,10 @@ async function appInit(appConfigOrFunc, defaultExtensions, defaultModes) {
 
   errorHandler.getHTTPErrorHandler = () => {
     if (typeof appConfig.httpErrorHandler === 'function') {
-      return appConfig.httpErrorHandler;
+      // Pass servicesManager to the error handler so it can show notifications
+      return (error) => {
+        return appConfig.httpErrorHandler(error, servicesManager);
+      };
     }
   };
 

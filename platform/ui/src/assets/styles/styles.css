@@ -1,3 +1,9 @@
+/* Variable  for colors */
+
+:root {
+  --diangoshare-primary-color: #f15723;
+}
+
 /* CUSTOM OHIF SCROLLBAR */
 .ohif-scrollbar {
   scrollbar-color: #173239 transparent;

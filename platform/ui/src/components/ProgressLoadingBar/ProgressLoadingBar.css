@@ -1,5 +1,5 @@
 .loading {
-  background-color: #091731;
+  background-color: #eeeeee;
   height: 8px;
   border-radius: 4px;
   overflow: hidden;
@@ -9,6 +9,7 @@
 
 .infinite-loading-bar {
   animation: side2side 2s ease-in-out infinite;
+  background-color: var(--diangoshare-primary-color);
   height: 100%;
   position: absolute;
   border-radius: 4px;

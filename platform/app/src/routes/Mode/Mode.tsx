@@ -152,6 +152,8 @@ export default function ModeRoute({
 
   const runTimeHangingProtocolId = lowerCaseSearchParams.get('hangingprotocolid');
   const token = lowerCaseSearchParams.get('token');
+  const diagnotoken = lowerCaseSearchParams.get('diagnotoken');
+
 
   if (token) {
     // if a token is passed in, set the userAuthenticationService to use it
@@ -170,6 +172,23 @@ export default function ModeRoute({
     const cleanUrl = urlObj.toString();
 
     // Update the browser's history without the token
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', cleanUrl);
+    }
+  }
+
+  if (diagnotoken) {
+    // Store diagnotoken in session storage
+    sessionStorage.setItem('diagnotoken', diagnotoken);
+
+    // Create a URL object with the current location
+    const urlObj = new URL(window.location.origin + location.pathname + location.search);
+
+    // Remove the diagnotoken from the URL object
+    urlObj.searchParams.delete('diagnotoken');
+    const cleanUrl = urlObj.toString();
+
+    // Update the browser's history without the diagnotoken
     if (window.history && window.history.replaceState) {
       window.history.replaceState(null, '', cleanUrl);
     }
@@ -449,7 +468,7 @@ export default function ModeRoute({
     <ImageViewerProvider
       // initialState={{ StudyInstanceUIDs: StudyInstanceUIDs }}
       StudyInstanceUIDs={studyInstanceUIDs}
-      // reducer={reducer}
+    // reducer={reducer}
     >
       <CombinedContextProvider>
         <DragAndDropProvider>

@@ -1,8 +1,8 @@
 import React from 'react';
 import classNames from 'classnames';
 
-import Icon from '../Icon';
 import ProgressLoadingBar from '../ProgressLoadingBar';
+import diangoShareLogo from '../../assets/icons/diango-share.png';
 
 /**
  *  A React component that renders a loading indicator.
@@ -18,9 +18,10 @@ function LoadingIndicatorProgress({ className, textBlock, progress }) {
         className
       )}
     >
-      <Icon
-        name="loading-ohif-mark"
-        className="h-12 w-12 text-white"
+      <img
+        src={diangoShareLogo}
+        alt="DiagnoShare Loading"
+        className="h-16 w-auto"
       />
       <div className="w-48">
         <ProgressLoadingBar progress={progress} />

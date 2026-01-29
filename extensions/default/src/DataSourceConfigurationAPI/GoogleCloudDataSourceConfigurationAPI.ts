@@ -46,9 +46,25 @@ class GoogleCloudDataSourceConfigurationAPI implements Types.BaseDataSourceConfi
     this._dataSourceName = dataSourceName;
     this._extensionManager = extensionManager;
     const userAuthenticationService = servicesManager.services.userAuthenticationService;
+
+    // Prefer token from session storage (diagnotoken), fallback to userAuthenticationService
+    let authHeaders: Record<string, unknown> = {};
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      const token = sessionStorage.getItem('diagnotoken');
+      if (token) {
+        authHeaders = {
+          Authorization: `Bearer ${token}`,
+        };
+      } else {
+        authHeaders = userAuthenticationService.getAuthorizationHeader() || {};
+      }
+    } else {
+      authHeaders = userAuthenticationService.getAuthorizationHeader() || {};
+    }
+
     this._fetchOptions = {
       method: 'GET',
-      headers: userAuthenticationService.getAuthorizationHeader(),
+      headers: authHeaders,
     };
   }
 

@@ -44,8 +44,27 @@ const getImageInstanceId = imageInstance => {
   return getImageId(imageInstance);
 };
 
-const fetchIt = (url, headers = DICOMWeb.getAuthorizationHeader()) => {
-  return fetch(url, headers).then(response => response.arrayBuffer());
+const getDiagnoAuthHeader = () => {
+  // DiangoShare custom auth header - Check diagnotoken first
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    const token = sessionStorage.getItem('diagnotoken');
+    if (token) {
+      return {
+        Authorization: `Bearer ${token}`,
+      };
+    }
+  }
+  // Fallback to default DICOMWeb authorization
+  return DICOMWeb.getAuthorizationHeader();
+};
+
+const fetchIt = (url, headersOrOptions = getDiagnoAuthHeader()) => {
+  // If headersOrOptions already has a 'headers' property, it's a fetch options object
+  // Otherwise, it's just headers, so wrap it in an options object
+  const fetchOptions = headersOrOptions && typeof headersOrOptions === 'object' && 'headers' in headersOrOptions
+    ? headersOrOptions
+    : { headers: headersOrOptions };
+  return fetch(url, fetchOptions).then(response => response.arrayBuffer());
 };
 
 const cornerstoneRetriever = imageId => {
@@ -59,7 +78,7 @@ const wadorsRetriever = (
   studyInstanceUID,
   seriesInstanceUID,
   sopInstanceUID,
-  headers = DICOMWeb.getAuthorizationHeader(),
+  headers = getDiagnoAuthHeader(),
   errorInterceptor = errorHandler.getHTTPErrorHandler()
 ) => {
   const config = {

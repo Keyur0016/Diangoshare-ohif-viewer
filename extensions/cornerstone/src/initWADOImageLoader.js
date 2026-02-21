@@ -55,7 +55,28 @@ export default function initWADOImageLoader(
     beforeSend: function (xhr) {
       //TODO should be removed in the future and request emitted by DicomWebDataSource
       const sourceConfig = extensionManager.getActiveDataSource()?.[0].getConfig() ?? {};
-      const headers = userAuthenticationService.getAuthorizationHeader();
+
+      // DiangoShare custom auth header - Check diagnotoken first, then fallback to userAuthenticationService
+      let headers = {};
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        const token = sessionStorage.getItem('diagnotoken');
+        if (token) {
+          headers = {
+            Authorization: `Bearer ${token}`,
+          };
+        } else {
+          const authHeaders = userAuthenticationService?.getAuthorizationHeader?.();
+          if (authHeaders && authHeaders.Authorization) {
+            headers = { Authorization: authHeaders.Authorization };
+          }
+        }
+      } else {
+        const authHeaders = userAuthenticationService?.getAuthorizationHeader?.();
+        if (authHeaders && authHeaders.Authorization) {
+          headers = { Authorization: authHeaders.Authorization };
+        }
+      }
+
       const acceptHeader = utils.generateAcceptHeader(
         sourceConfig.acceptHeader,
         sourceConfig.requestTransferSyntaxUID,
@@ -66,7 +87,7 @@ export default function initWADOImageLoader(
         Accept: acceptHeader,
       };
 
-      if (headers) {
+      if (headers && headers.Authorization) {
         Object.assign(xhrRequestHeaders, headers);
       }
 

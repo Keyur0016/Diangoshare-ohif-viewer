@@ -26,36 +26,36 @@ function ViewerLayout({
 
   const { hangingProtocolService, uiNotificationService } = servicesManager.services;
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(appConfig.showLoadingIndicator);
-  const [isAttachingImage, setIsAttachingImage] = useState(false);
-  const [hasDiagnoToken, setHasDiagnoToken] = useState(false);
+  // const [isAttachingImage, setIsAttachingImage] = useState(false);
+  // const [hasDiagnoToken, setHasDiagnoToken] = useState(false);
 
   // Check for diagnotoken in session storage
-  useEffect(() => {
-    const checkToken = () => {
-      const token = sessionStorage.getItem('diagnotoken');
-      setHasDiagnoToken(!!token);
-    };
+  // useEffect(() => {
+  //   const checkToken = () => {
+  //     const token = sessionStorage.getItem('diagnotoken');
+  //     setHasDiagnoToken(!!token);
+  //   };
 
-    // Check initially
-    checkToken();
+  //   // Check initially
+  //   checkToken();
 
-    // Listen for storage changes (in case token is added/removed)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'diagnotoken') {
-        checkToken();
-      }
-    };
+  //   // Listen for storage changes (in case token is added/removed)
+  //   const handleStorageChange = (e: StorageEvent) => {
+  //     if (e.key === 'diagnotoken') {
+  //       checkToken();
+  //     }
+  //   };
 
-    window.addEventListener('storage', handleStorageChange);
+  //   window.addEventListener('storage', handleStorageChange);
 
-    // Also check periodically in case token is set in same window
-    const interval = setInterval(checkToken, 1000);
+  //   // Also check periodically in case token is set in same window
+  //   const interval = setInterval(checkToken, 1000);
 
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('storage', handleStorageChange);
+  //     clearInterval(interval);
+  //   };
+  // }, []);
 
   /**
    * Set body classes (tailwindcss) that don't allow vertical
@@ -170,7 +170,7 @@ function ViewerLayout({
                 />
               </ErrorBoundary>
               {/* Attach Image in Report Button - Only show if diagnotoken exists */}
-              {hasDiagnoToken && (
+              {/* {hasDiagnoToken && (
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
                   <button
                     onClick={async () => {
@@ -276,7 +276,7 @@ function ViewerLayout({
                     {isAttachingImage ? 'Attaching...' : 'Attach Image in Report'}
                   </button>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
           {rightPanelComponents.length ? (

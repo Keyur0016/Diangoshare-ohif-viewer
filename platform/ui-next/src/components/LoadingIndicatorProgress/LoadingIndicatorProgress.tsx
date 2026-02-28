@@ -1,15 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import classNames from 'classnames';
 
 import ProgressLoadingBar from '../ProgressLoadingBar';
 import { Icons } from '../Icons';
+
+const getDiagnoShareLogoSrc = () =>
+  typeof window !== 'undefined' && (window as any).PUBLIC_URL
+    ? `${(window as any).PUBLIC_URL}assets/diango-share.png`
+    : '';
+
 /**
  *  A React component that renders a loading indicator.
- * if progress is not provided, it will render an infinite loading indicator
- * if progress is provided, it will render a progress bar
- * Optionally a textBlock can be provided to display a message
+ * Shows DiagnoShare logo during load; if progress is provided, shows a progress bar.
+ * Optionally a textBlock can be provided to display a message.
  */
 function LoadingIndicatorProgress({ className, textBlock, progress }) {
+  const [logoSrc] = useState(getDiagnoShareLogoSrc());
+  const [logoError, setLogoError] = useState(false);
+
   return (
     <div
       className={classNames(
@@ -17,7 +25,16 @@ function LoadingIndicatorProgress({ className, textBlock, progress }) {
         className
       )}
     >
-      <Icons.LoadingOHIFMark className="h-12 w-12 text-white" />
+      {logoSrc && !logoError ? (
+        <img
+          src={logoSrc}
+          alt="DiagnoShare"
+          className="h-16 w-auto object-contain"
+          onError={() => setLogoError(true)}
+        />
+      ) : (
+        <Icons.LoadingOHIFMark className="h-12 w-12 text-white" />
+      )}
       <div className="w-48">
         <ProgressLoadingBar progress={progress} />
       </div>

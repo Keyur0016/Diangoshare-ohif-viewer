@@ -1,13 +1,44 @@
 /** @type {AppTypes.Config} */
 
+/** DICOMWeb API base URL – used for qidoRoot, wadoRoot, wadoUriRoot (change this to update all WADO/QIDO roots) */
+var DICOMWEB_BASE_URL = 'https://d14fa38qiwhyfd.cloudfront.net/dicomweb';
+
 window.config = {
   name: 'config/default.js',
   routerBasename: null,
-  // whiteLabeling: {},
+  whiteLabeling: {
+    createLogoComponentFn: function (React, props) {
+      var publicUrl = typeof window !== 'undefined' && window.PUBLIC_URL ? window.PUBLIC_URL : '';
+      var logoSrc = publicUrl + 'assets/diango-share.png';
+      return React.createElement(
+        'div',
+        { className: 'flex flex-col items-start justify-center', style: { minWidth: '120px' } },
+        React.createElement('img', {
+          src: logoSrc,
+          alt: 'DiagnoShare',
+          className: 'h-8 w-auto object-contain',
+          onError: function (e) {
+            e.target.style.display = 'none';
+            var next = e.target.nextElementSibling;
+            if (next) next.style.display = 'flex';
+          },
+        }),
+        React.createElement('div', {
+          className: 'flex flex-col text-white text-left',
+          style: { display: 'none', fontSize: '11px', lineHeight: '1.2' },
+        }, [
+          React.createElement('span', { key: '1', className: 'font-semibold' }, 'DiagnoShare'),
+          React.createElement('span', { key: '2', className: 'text-primary-light text-[10px]' }, 'Connecting Healthcare'),
+        ])
+      );
+    },
+  },
   extensions: [],
   modes: [],
   customizationService: {},
   showStudyList: true,
+  /** Hides the study list table and disables study search API calls on the worklist page */
+  hideStudyListTable: true,
   // some windows systems have issues with more than 3 web workers
   maxNumberOfWebWorkers: 3,
   // below flag is for performance reasons, but it might not work for all servers
@@ -26,6 +57,16 @@ window.config = {
     prefetch: 25,
   },
   showErrorDetails: 'always', // 'always', 'dev', 'production'
+  /** Hide the "OHIF Viewer is for investigational use only" confirmation dialog */
+  investigationalUseDialog: { option: 'never' },
+  /** Return headers for every DICOMWeb API request. Use sessionStorage 'diagnotoken' (same as reference) or URL ?token= */
+  getAuthorizationHeader: function () {
+    var token =
+      (typeof window !== 'undefined' && window.sessionStorage && window.sessionStorage.getItem('diagnotoken')) ||
+      (typeof window !== 'undefined' && window.__DIAGNOSHARE_TOKEN__) ||
+      null;
+    return token ? { Authorization: 'Bearer ' + token } : {};
+  },
   // filterQueryParam: false,
   // Defines multi-monitor layouts
   multimonitor: [
@@ -106,9 +147,9 @@ window.config = {
       configuration: {
         friendlyName: 'AWS S3 Static wado server',
         name: 'aws',
-        wadoUriRoot: 'https://d14fa38qiwhyfd.cloudfront.net/dicomweb',
-        qidoRoot: 'https://d14fa38qiwhyfd.cloudfront.net/dicomweb',
-        wadoRoot: 'https://d14fa38qiwhyfd.cloudfront.net/dicomweb',
+        wadoUriRoot: DICOMWEB_BASE_URL,
+        qidoRoot: DICOMWEB_BASE_URL,
+        wadoRoot: DICOMWEB_BASE_URL,
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',

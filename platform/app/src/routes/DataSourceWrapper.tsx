@@ -7,6 +7,7 @@ import { extensionManager } from '../App';
 import { useParams, useLocation } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import useSearchParams from '../hooks/useSearchParams';
+import { useAppConfig } from '@state';
 
 /**
  * Determines if two React Router location objects are the same.
@@ -29,6 +30,8 @@ const areLocationsTheSame = (location0, location1) => {
  */
 function DataSourceWrapper(props: withAppTypes) {
   const { servicesManager } = props;
+  const [appConfig] = useAppConfig();
+  const hideStudyListTable = !!appConfig?.hideStudyListTable;
   const navigate = useNavigate();
   const { children: LayoutTemplate, ...rest } = props;
   const params = useParams();
@@ -141,7 +144,7 @@ function DataSourceWrapper(props: withAppTypes) {
   }, []);
 
   useEffect(() => {
-    if (!isDataSourceInitialized) {
+    if (!isDataSourceInitialized || hideStudyListTable) {
       return;
     }
 
@@ -217,7 +220,7 @@ function DataSourceWrapper(props: withAppTypes) {
       console.warn(ex);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, location, params, isLoading, setIsLoading, dataSource, isDataSourceInitialized]);
+  }, [data, location, params, isLoading, setIsLoading, dataSource, isDataSourceInitialized, hideStudyListTable]);
   // queryFilterValues
 
   // TODO: Better way to pass DataSource?

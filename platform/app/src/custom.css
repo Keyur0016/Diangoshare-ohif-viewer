@@ -1,0 +1,22 @@
+/**
+ * DiagnoShare – Custom styles
+ *
+ * Add your style overrides and theme changes here.
+ * This file is loaded after the main app styles, so your rules will
+ * take effect when specificity is equal.
+ *
+ * Examples:
+ *   - Header / layout: .Header, [data-cy="header"], etc.
+ *   - Buttons / links: .btn, a.text-primary-active
+ *   - Study list / worklist: .bg-primary-dark, .StudyListFilter
+ *   - Viewer: viewport overlays, panels, toolbars
+ *   - Typography: .text-white, font sizes, weights
+ */
+
+/* ---------------------------------------------------------------------------
+   Add your custom styles below
+   --------------------------------------------------------------------------- */
+
+.djangoshare-header-container {
+
+}

@@ -142,8 +142,19 @@ function createDicomWebApi(dicomWebConfig: DicomWebConfig, servicesManager) {
 
       dicomWebConfigCopy = JSON.parse(JSON.stringify(dicomWebConfig));
 
+      /**
+       * DiagnoShare: use sessionStorage key `diagnotoken` for Bearer token, then fall back to userAuthenticationService.
+       * Same as reference project – ensures Authorization header is sent on every API call.
+       */
       getAuthorizationHeader = () => {
         const xhrRequestHeaders: HeadersInterface = {};
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          const token = sessionStorage.getItem('diagnotoken');
+          if (token) {
+            xhrRequestHeaders.Authorization = `Bearer ${token}`;
+            return xhrRequestHeaders;
+          }
+        }
         const authHeaders = userAuthenticationService.getAuthorizationHeader();
         if (authHeaders && authHeaders.Authorization) {
           xhrRequestHeaders.Authorization = authHeaders.Authorization;
@@ -184,7 +195,7 @@ function createDicomWebApi(dicomWebConfig: DicomWebConfig, servicesManager) {
         url: dicomWebConfig.qidoRoot,
         staticWado: dicomWebConfig.staticWado,
         singlepart: dicomWebConfig.singlepart,
-        headers: userAuthenticationService.getAuthorizationHeader(),
+        headers: getAuthorizationHeader(),
         errorInterceptor: errorHandler.getHTTPErrorHandler(),
         supportsFuzzyMatching: dicomWebConfig.supportsFuzzyMatching,
       };
@@ -193,7 +204,7 @@ function createDicomWebApi(dicomWebConfig: DicomWebConfig, servicesManager) {
         url: dicomWebConfig.wadoRoot,
         staticWado: dicomWebConfig.staticWado,
         singlepart: dicomWebConfig.singlepart,
-        headers: userAuthenticationService.getAuthorizationHeader(),
+        headers: getAuthorizationHeader(),
         errorInterceptor: errorHandler.getHTTPErrorHandler(),
         supportsFuzzyMatching: dicomWebConfig.supportsFuzzyMatching,
       };

@@ -32,7 +32,6 @@ import {
   useModal,
   useSessionStorage,
   Onboarding,
-  ScrollArea,
   InvestigationalUseDialog,
 } from '@ohif/ui-next';
 
@@ -562,9 +561,23 @@ function WorkList({
       />
       <Onboarding />
       <InvestigationalUseDialog dialogConfiguration={appConfig?.investigationalUseDialog} />
-      <div className="flex h-full flex-col overflow-y-auto">
-        <ScrollArea>
-          <div className="flex grow flex-col">
+      <div className="ohif-scrollbar flex grow flex-col overflow-y-auto">
+        {appConfig?.hideStudyListTable ? (
+          <div
+            className="flex flex-1 items-center justify-center bg-black"
+            style={{ minHeight: 'calc(100vh - 135px)' }}
+          >
+            <img
+              src={typeof window !== 'undefined' ? `${(window as any).PUBLIC_URL || ''}assets/diango-share.png` : ''}
+              alt="DiagnoShare"
+              className="h-24 w-auto object-contain"
+              onError={e => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </div>
+        ) : (
+          <>
             <StudyListFilter
               numOfStudies={pageNumber * resultsPerPage > 100 ? 101 : numOfStudies}
               filtersMeta={filtersMeta}
@@ -579,34 +592,34 @@ function WorkList({
                   : undefined
               }
             />
-          </div>
-          {hasStudies ? (
-            <div className="flex grow flex-col">
-              <StudyListTable
-                tableDataSource={tableDataSource.slice(offset, offsetAndTake)}
-                numOfStudies={numOfStudies}
-                querying={querying}
-                filtersMeta={filtersMeta}
-              />
-              <div className="grow">
-                <StudyListPagination
-                  onChangePage={onPageNumberChange}
-                  onChangePerPage={onResultsPerPageChange}
-                  currentPage={pageNumber}
-                  perPage={resultsPerPage}
+            {hasStudies ? (
+              <div className="flex grow flex-col">
+                <StudyListTable
+                  tableDataSource={tableDataSource.slice(offset, offsetAndTake)}
+                  numOfStudies={numOfStudies}
+                  querying={querying}
+                  filtersMeta={filtersMeta}
                 />
+                <div className="grow">
+                  <StudyListPagination
+                    onChangePage={onPageNumberChange}
+                    onChangePerPage={onResultsPerPageChange}
+                    currentPage={pageNumber}
+                    perPage={resultsPerPage}
+                  />
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center pt-48">
-              {appConfig.showLoadingIndicator && isLoadingData ? (
-                <LoadingIndicatorProgress className={'h-full w-full bg-black'} />
-              ) : (
-                <EmptyStudies />
-              )}
-            </div>
-          )}
-        </ScrollArea>
+            ) : (
+              <div className="flex flex-col items-center justify-center pt-48">
+                {appConfig.showLoadingIndicator && isLoadingData ? (
+                  <LoadingIndicatorProgress className={'h-full w-full bg-black'} />
+                ) : (
+                  <EmptyStudies />
+                )}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

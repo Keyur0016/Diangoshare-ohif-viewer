@@ -127,6 +127,8 @@ declare global {
       activateViewportBeforeInteraction?: boolean;
       autoPlayCine?: boolean;
       showStudyList?: boolean;
+      /** When true, study list table and its API calls are hidden/disabled on the worklist page */
+      hideStudyListTable?: boolean;
       whiteLabeling?: Record<string, unknown>;
       httpErrorHandler?: (error: Error) => void;
       dangerouslyUseDynamicConfig?: {
@@ -146,6 +148,8 @@ declare global {
         maxNumPrefetchRequests: number;
         order: 'closest' | 'downward' | 'upward';
       };
+      /** Optional: return headers (e.g. Authorization) to send with every DICOMWeb API request */
+      getAuthorizationHeader?: () => Record<string, string> | undefined;
     }
 
     export interface Test {

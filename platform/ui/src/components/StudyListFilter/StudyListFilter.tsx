@@ -7,6 +7,17 @@ import Typography from '../Typography';
 import InputGroup from '../InputGroup';
 import { Icons } from '@ohif/ui-next';
 
+// DiagnoShare logo URL (public assets) - matches reference project configuration
+const getDiagnoShareLogoUrl = () => {
+  if (typeof window === 'undefined') return '';
+  const base = (window as any).PUBLIC_URL || '';
+  return `${base}assets/diango-share.png`;
+};
+
+/**
+ * Study List filter section. Configured to match reference project:
+ * shows DiagnoShare branding area at top, then filter row with title, study count, and filter inputs.
+ */
 const StudyListFilter = ({
   filtersMeta,
   filterValues,
@@ -30,15 +41,29 @@ const StudyListFilter = ({
 
   return (
     <React.Fragment>
+      {/* DiagnoShare branding area - matches reference project */}
+      <div className="bg-black">
+        <div
+          className="flex items-center justify-center mx-auto py-6"
+          style={{ width: '60%', minHeight: '120px' }}
+        >
+          <img
+            src={getDiagnoShareLogoUrl()}
+            alt="DiagnoShare"
+            className="h-16 w-auto object-contain djangoshare-header-icon"
+            onError={e => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
+      </div>
+      {/* Study List title, config, upload, count and filters - same as before */}
       <div>
         <div className="bg-black">
           <div className="container relative mx-auto flex flex-col pt-5">
             <div className="mb-5 flex flex-row justify-between">
               <div className="flex min-w-[1px] shrink flex-row items-center gap-6">
-                <Typography
-                  variant="h6"
-                  className="text-white"
-                >
+                <Typography variant="h6" className="text-white">
                   {t('StudyList')}
                 </Typography>
                 {getDataSourceConfigurationComponent && getDataSourceConfigurationComponent()}
@@ -53,7 +78,6 @@ const StudyListFilter = ({
                 )}
               </div>
               <div className="flex h-[34px] flex-row items-center">
-                {/* TODO revisit the completely rounded style of button used for clearing the study list filter - for now use LegacyButton*/}
                 {isFiltering && (
                   <LegacyButton
                     rounded="full"
@@ -68,18 +92,11 @@ const StudyListFilter = ({
                   </LegacyButton>
                 )}
 
-                <Typography
-                  variant="h6"
-                  className="mr-2"
-                  data-cy={'num-studies'}
-                >
+                <Typography variant="h6" className="mr-2" data-cy={'num-studies'}>
                   {numOfStudies > 100 ? '>100' : numOfStudies}
                 </Typography>
-                <Typography
-                  variant="h6"
-                  className="text-primary-light"
-                >
-                  {`${t('Studies')} `}
+                <Typography variant="h6" className="text-primary-light">
+                  {`${t('Studies')} `}
                 </Typography>
               </div>
             </div>
@@ -114,16 +131,11 @@ const StudyListFilter = ({
 StudyListFilter.propTypes = {
   filtersMeta: PropTypes.arrayOf(
     PropTypes.shape({
-      /** Identifier used to map a field to it's value in `filterValues` */
       name: PropTypes.string.isRequired,
-      /** Friendly label for filter field */
       displayName: PropTypes.string.isRequired,
-      /** One of the supported filter field input types */
       inputType: PropTypes.oneOf(['Text', 'MultiSelect', 'DateRange', 'None']).isRequired,
       isSortable: PropTypes.bool.isRequired,
-      /** Size of filter field in a 12-grid system */
       gridCol: PropTypes.oneOf([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]).isRequired,
-      /** Options for a "MultiSelect" inputType */
       option: PropTypes.arrayOf(
         PropTypes.shape({
           value: PropTypes.string,

@@ -36,6 +36,7 @@ import appInit from './appInit.js';
 import OpenIdConnectRoutes from './utils/OpenIdConnectRoutes';
 import { ShepherdJourneyProvider } from 'react-shepherd';
 import './App.css';
+import './custom.css';
 
 let commandsManager: CommandsManager,
   extensionManager: ExtensionManager,
@@ -112,6 +113,16 @@ function App({
     uiNotificationService,
     customizationService,
   } = servicesManager.services;
+
+  // Apply config-based authorization header for every API call (if provided and not overridden by OIDC)
+  if (
+    appConfigState.getAuthorizationHeader &&
+    typeof appConfigState.getAuthorizationHeader === 'function'
+  ) {
+    userAuthenticationService.setServiceImplementation({
+      getAuthorizationHeader: appConfigState.getAuthorizationHeader,
+    });
+  }
 
   const providers = [
     [AppConfigProvider, { value: appConfigState }],

@@ -69,8 +69,16 @@ export default function ModeRoute({
   const runTimeHangingProtocolId = lowerCaseSearchParams.get('hangingprotocolid');
   const runTimeStageId = lowerCaseSearchParams.get('stageid');
   const token = lowerCaseSearchParams.get('token');
+  const diagnotokenFromQuery = lowerCaseSearchParams.get('diagnotoken');
+  const djangotoken = lowerCaseSearchParams.get('djangotoken');
 
-  if (token) {
+  // diagnotoken or djangotoken from query params: store in sessionStorage and use for auth
+  const authTokenFromQuery = diagnotokenFromQuery || djangotoken;
+  const authTokenParamName = diagnotokenFromQuery ? 'diagnotoken' : 'djangotoken';
+  if (authTokenFromQuery && typeof window !== 'undefined' && window.sessionStorage) {
+    window.sessionStorage.setItem('diagnotoken', authTokenFromQuery);
+    updateAuthServiceAndCleanUrl(authTokenFromQuery, location, userAuthenticationService, authTokenParamName);
+  } else if (token) {
     updateAuthServiceAndCleanUrl(token, location, userAuthenticationService);
   }
 

@@ -3,8 +3,13 @@
 /** DICOMWeb API base URL – update this to change all WADO/QIDO roots for production */
 var DICOMWEB_BASE_URL = 'http://localhost:8000/ohif';
 
+/** Base URL for OHIF patient info API (fetch-patient-info). */
+var PATIENT_INFO_API_BASE_URL = DICOMWEB_BASE_URL;
+
 window.config = {
   name: 'config/prod-config.js',
+  /** Base URL for patient info API: GET {patientInfoApiBaseUrl}/fetch-patient-info?studyInstanceUID=... */
+  patientInfoApiBaseUrl: PATIENT_INFO_API_BASE_URL,
   routerBasename: '/',
   whiteLabeling: {
     createLogoComponentFn: function (React, props) {

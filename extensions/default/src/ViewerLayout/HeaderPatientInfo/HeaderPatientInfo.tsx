@@ -23,6 +23,8 @@ function HeaderPatientInfo({ servicesManager, appConfig }: withAppTypes) {
   const [expanded, setExpanded] = useState(initialExpandedState);
   const { patientInfo, isMixedPatients } = usePatientInfo(servicesManager);
 
+  console.log('patientInfo', patientInfo);
+
   useEffect(() => {
     if (isMixedPatients && expanded) {
       setExpanded(false);
@@ -35,8 +37,11 @@ function HeaderPatientInfo({ servicesManager, appConfig }: withAppTypes) {
     }
   };
 
-  const formattedPatientName = formatWithEllipsis(patientInfo.PatientName, 27);
-  const formattedPatientID = formatWithEllipsis(patientInfo.PatientID, 15);
+  const formattedPatientName = formatWithEllipsis(patientInfo.PatientName || '-', 27);
+  console.log('formattedPatientName', formattedPatientName);
+  const formattedPatientID = formatWithEllipsis(patientInfo.PatientID || '-', 15);
+  const displaySex = patientInfo.PatientSex != null && patientInfo.PatientSex !== '' ? patientInfo.PatientSex : '-';
+  const displayDOB = patientInfo.PatientDOB != null && patientInfo.PatientDOB !== '' ? patientInfo.PatientDOB : '-';
 
   return (
     <div
@@ -56,8 +61,8 @@ function HeaderPatientInfo({ servicesManager, appConfig }: withAppTypes) {
             </div>
             <div className="text-aqua-pale flex gap-2 text-[11px]">
               <div>{formattedPatientID}</div>
-              <div>{patientInfo.PatientSex}</div>
-              <div>{patientInfo.PatientDOB}</div>
+              <div>{displaySex}</div>
+              <div>{displayDOB}</div>
             </div>
           </>
         ) : (

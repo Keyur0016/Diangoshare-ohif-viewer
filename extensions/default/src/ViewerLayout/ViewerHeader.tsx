@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -9,6 +9,7 @@ import HeaderPatientInfo from './HeaderPatientInfo';
 import { PatientInfoVisibility } from './HeaderPatientInfo/HeaderPatientInfo';
 import { preserveQueryParameters } from '@ohif/app';
 import { Types } from '@ohif/core';
+import { saveViewportData } from '../utils/saveViewportData';
 
 function ViewerHeader({ appConfig }: withAppTypes<{ appConfig: AppTypes.Config }>) {
   const { servicesManager, extensionManager, commandsManager } = useSystem();
@@ -38,6 +39,19 @@ function ViewerHeader({ appConfig }: withAppTypes<{ appConfig: AppTypes.Config }
 
   const { t } = useTranslation();
   const { show } = useModal();
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      await saveViewportData(servicesManager);
+    } catch (error) {
+      console.error('Failed to save viewport data:', error);
+      // You could show a toast notification here
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const AboutModal = customizationService.getCustomization(
     'ohif.aboutModal'
@@ -97,7 +111,7 @@ function ViewerHeader({ appConfig }: withAppTypes<{ appConfig: AppTypes.Config }
         )
       }
       UndoRedo={
-        <div className="text-primary flex cursor-pointer items-center">
+        <div className="text-primary flex cursor-pointer items-center gap-2">
           <Button
             variant="ghost"
             className="hover:bg-primary-dark"
@@ -115,6 +129,19 @@ function ViewerHeader({ appConfig }: withAppTypes<{ appConfig: AppTypes.Config }
             }}
           >
             <Icons.Redo className="" />
+          </Button>
+          <Button
+            variant="ghost"
+            className="hover:bg-primary-dark"
+            onClick={handleSave}
+            disabled={isSaving}
+            title={t('Save viewport image and measurements') || 'Save viewport image and measurements'}
+          >
+            {isSaving ? (
+              <Icons.LoadingSpinner className="animate-spin" />
+            ) : (
+              <Icons.Download className="" />
+            )}
           </Button>
         </div>
       }

@@ -23,8 +23,6 @@ function HeaderPatientInfo({ servicesManager, appConfig }: withAppTypes) {
   const [expanded, setExpanded] = useState(initialExpandedState);
   const { patientInfo, isMixedPatients } = usePatientInfo(servicesManager);
 
-  console.log('patientInfo', patientInfo);
-
   useEffect(() => {
     if (isMixedPatients && expanded) {
       setExpanded(false);

@@ -47,6 +47,13 @@ export default defineConfig({
     },
   },
   plugins: [pluginReact(), pluginNodePolyfill()],
+  // Disable the "Uncaught runtime errors" overlay so request-failed and similar errors
+  // are not shown full-screen; they are still handled by ErrorBoundary (which suppresses "request failed").
+  dev: {
+    client: {
+      overlay: false,
+    },
+  },
   tools: {
     rspack: {
       experiments: {

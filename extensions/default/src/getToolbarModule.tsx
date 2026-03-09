@@ -59,5 +59,15 @@ export default function getToolbarModule({ commandsManager, servicesManager }: w
         };
       },
     },
+    {
+      name: 'evaluate.reportToken',
+      evaluate: () => {
+        const hasReportToken =
+          typeof window !== 'undefined' &&
+          window.sessionStorage &&
+          !!window.sessionStorage.getItem('reporttoken');
+        return { disabled: !hasReportToken };
+      },
+    },
   ];
 }

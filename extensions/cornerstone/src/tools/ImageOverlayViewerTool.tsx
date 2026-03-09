@@ -75,6 +75,7 @@ class ImageOverlayViewerTool extends AnnotationDisplayTool {
 
     // Fix the x, y positions
     overlays.forEach(overlay => {
+      if (!overlay) return;
       overlay.x ||= 0;
       overlay.y ||= 0;
     });
@@ -83,7 +84,8 @@ class ImageOverlayViewerTool extends AnnotationDisplayTool {
     ImageOverlayViewerTool.addOverlayPlaneModule(imageId, overlayMetadata);
 
     this._getCachedStat(imageId, overlayMetadata, this.configuration.fillColor).then(cachedStat => {
-      cachedStat.overlays.forEach(overlay => {
+      (cachedStat.overlays || []).forEach(overlay => {
+        if (!overlay) return;
         this._renderOverlay(enabledElement, svgDrawingHelper, overlay);
       });
     });
@@ -100,6 +102,7 @@ class ImageOverlayViewerTool extends AnnotationDisplayTool {
    * @returns
    */
   private _renderOverlay(enabledElement, svgDrawingHelper, overlayData) {
+    if (!overlayData) return;
     const { viewport } = enabledElement;
     const imageId = this.getReferencedImageId(viewport);
     if (!imageId) {
@@ -107,7 +110,7 @@ class ImageOverlayViewerTool extends AnnotationDisplayTool {
     }
 
     // Decide the rendering position of the overlay image on the current canvas
-    const { _id, columns: width, rows: height, x, y } = overlayData;
+    const { _id, columns: width, rows: height, x = 0, y = 0 } = overlayData;
     const overlayTopLeftWorldPos = utilities.imageToWorldCoords(imageId, [
       x - 1, // Remind that top-left corner's (x, y) is be (1, 1)
       y - 1,
@@ -198,7 +201,7 @@ class ImageOverlayViewerTool extends AnnotationDisplayTool {
           };
         })
     );
-    overlayMetadata.overlays = overlays;
+    overlayMetadata.overlays = overlays.filter(Boolean);
 
     return overlayMetadata;
   }

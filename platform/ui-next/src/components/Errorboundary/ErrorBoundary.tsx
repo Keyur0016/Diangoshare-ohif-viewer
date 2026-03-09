@@ -8,6 +8,16 @@ import { useNotification } from '../../contextProviders';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+/** Errors matching these patterns are not shown in the error modal/notification (e.g. non-critical request failures). */
+const SUPPRESSED_ERROR_MESSAGES = ['request failed'];
+
+function shouldSuppressErrorDisplay(error: unknown): boolean {
+  if (!error) return false;
+  const message = typeof (error as Error).message === 'string' ? (error as Error).message : '';
+  const lower = message.toLowerCase();
+  return SUPPRESSED_ERROR_MESSAGES.some(phrase => lower.includes(phrase.toLowerCase()));
+}
+
 /**
  * Parses an error stack trace to extract important information
  * Extracts the first function name from the stack trace
@@ -278,6 +288,10 @@ const ErrorBoundary = ({
 
     const handleError = (event: ErrorEvent) => {
       clearTimeout(errorTimeout);
+      if (shouldSuppressErrorDisplay(event.error)) {
+        // console.warn('[ErrorBoundary] Suppressed error:', event.error?.message ?? event.error);
+        return;
+      }
       errorTimeout = setTimeout(() => {
         setError(event.error);
         onErrorHandler(event.error, null);
@@ -285,6 +299,11 @@ const ErrorBoundary = ({
     };
 
     const handleRejection = (event: PromiseRejectionEvent) => {
+      if (shouldSuppressErrorDisplay(event.reason)) {
+        event.preventDefault();
+        // console.warn('[ErrorBoundary] Suppressed unhandled rejection:', event.reason?.message ?? event.reason);
+        return;
+      }
       event.preventDefault();
       clearTimeout(errorTimeout);
       errorTimeout = setTimeout(() => {
@@ -313,19 +332,26 @@ const ErrorBoundary = ({
 
   return (
     <ReactErrorBoundary
-      fallbackRender={props => (
-        <FallbackComponent
-          {...props}
-          context={context}
-          showErrorDetails={showErrorDetails}
-        />
-      )}
+      fallbackRender={props => {
+        const err = props.error as ErrorBoundaryError;
+        if (shouldSuppressErrorDisplay(err)) {
+          // console.warn('[ErrorBoundary] Suppressed error:', err?.message ?? err);
+          return null;
+        }
+        return (
+          <FallbackComponent
+            {...props}
+            context={context}
+            showErrorDetails={showErrorDetails}
+          />
+        );
+      }}
       onReset={onResetHandler}
       onError={(error, info) => onErrorHandler(error as ErrorBoundaryError, info.componentStack)}
     >
       <>
         {children}
-        {error && (
+        {error && !shouldSuppressErrorDisplay(error) && (
           <FallbackComponent
             error={error}
             context={context}

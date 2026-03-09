@@ -9,7 +9,7 @@ import ViewportGrid from '@components/ViewportGrid';
 import Compose from './Compose';
 import loadModules from '../../pluginImports';
 import { defaultRouteInit } from './defaultRouteInit';
-import { updateAuthServiceAndCleanUrl } from './updateAuthServiceAndCleanUrl';
+import { updateAuthServiceAndCleanUrl, cleanQueryParamFromUrl } from './updateAuthServiceAndCleanUrl';
 
 const { getSplitParam } = utils;
 
@@ -71,6 +71,7 @@ export default function ModeRoute({
   const token = lowerCaseSearchParams.get('token');
   const diagnotokenFromQuery = lowerCaseSearchParams.get('diagnotoken');
   const djangotoken = lowerCaseSearchParams.get('djangotoken');
+  const reporttoken = lowerCaseSearchParams.get('reporttoken');
 
   // diagnotoken or djangotoken from query params: store in sessionStorage and use for auth
   const authTokenFromQuery = diagnotokenFromQuery || djangotoken;
@@ -80,6 +81,12 @@ export default function ModeRoute({
     updateAuthServiceAndCleanUrl(authTokenFromQuery, location, userAuthenticationService, authTokenParamName);
   } else if (token) {
     updateAuthServiceAndCleanUrl(token, location, userAuthenticationService);
+  }
+
+  // reporttoken from query params: store in sessionStorage and remove from URL
+  if (reporttoken && typeof window !== 'undefined' && window.sessionStorage) {
+    window.sessionStorage.setItem('reporttoken', reporttoken);
+    cleanQueryParamFromUrl(location, 'reporttoken');
   }
 
   // An undefined dataSourceName implies that the active data source that is already set in the ExtensionManager should be used.

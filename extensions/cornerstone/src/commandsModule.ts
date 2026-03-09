@@ -31,6 +31,7 @@ import {
   createReportAsync,
   colorPickerDialog,
   callInputDialog,
+  attachViewportImageToReport,
 } from '@ohif/extension-default';
 import { vec3, mat4 } from 'gl-matrix';
 import toggleImageSliceSync from './utils/imageSliceSync/toggleImageSliceSync';
@@ -1093,6 +1094,13 @@ function commandsModule({
           },
           containerClassName: 'max-w-4xl p-4',
         });
+      }
+    },
+    attachImageToReport: async () => {
+      try {
+        await attachViewportImageToReport(servicesManager);
+      } catch {
+        // attachViewportImageToReport shows notifications when uiNotificationService is available
       }
     },
     /**
@@ -2569,6 +2577,9 @@ function commandsModule({
     },
     showDownloadViewportModal: {
       commandFn: actions.showDownloadViewportModal,
+    },
+    attachImageToReport: {
+      commandFn: actions.attachImageToReport,
     },
     toggleCine: {
       commandFn: actions.toggleCine,

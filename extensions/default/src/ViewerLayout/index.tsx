@@ -5,6 +5,7 @@ import { InvestigationalUseDialog } from '@ohif/ui-next';
 import { HangingProtocolService, CommandsManager } from '@ohif/core';
 import { useAppConfig } from '@state';
 import ViewerHeader from './ViewerHeader';
+import BottomAttachToReportButton from './BottomAttachToReportButton';
 import SidePanelWithServices from '../Components/SidePanelWithServices';
 import { Onboarding, ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@ohif/ui-next';
 import useResizablePanels from './ResizablePanelsHook';
@@ -195,6 +196,7 @@ function ViewerLayout({
                     commandsManager={commandsManager}
                   />
                 </div>
+                <BottomAttachToReportButton servicesManager={servicesManager} />
               </div>
             </ResizablePanel>
             {hasRightPanels ? (

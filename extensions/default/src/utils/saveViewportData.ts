@@ -23,6 +23,37 @@ function canvasToBlob(canvas: HTMLCanvasElement, type = 'image/png', quality?: n
 }
 
 /**
+ * Draw an SVG element onto a 2D canvas context (e.g. annotation/measurement layer).
+ */
+function drawSvgOnCanvas(
+  ctx: CanvasRenderingContext2D,
+  svg: SVGElement,
+  width: number,
+  height: number
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const clone = svg.cloneNode(true) as SVGElement;
+    clone.setAttribute('width', String(width));
+    clone.setAttribute('height', String(height));
+    const serializer = new XMLSerializer();
+    const str = serializer.serializeToString(clone);
+    const blob = new Blob([str], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      resolve();
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to load SVG for capture'));
+    };
+    img.src = url;
+  });
+}
+
+/**
  * Capture viewport image as Blob
  */
 export async function getViewportImageAsBlob(
@@ -85,6 +116,16 @@ export async function getViewportImageAsBlob(
     }
   });
 
+  // Draw SVG annotation layer (measurements, length tool, etc.) on top
+  const svgLayer = viewportElement.querySelector('svg');
+  if (svgLayer && outputCanvas.width > 0 && outputCanvas.height > 0) {
+    try {
+      await drawSvgOnCanvas(ctx, svgLayer, outputCanvas.width, outputCanvas.height);
+    } catch (err) {
+      console.warn('Could not capture SVG annotation layer:', err);
+    }
+  }
+
   // ✅ Use toBlob() directly — avoids fetch(dataURL) unreliability
   try {
     const blob = await canvasToBlob(outputCanvas, 'image/png');
@@ -124,7 +165,13 @@ export async function saveViewportData(
 }
 
 /**
- * Attach viewport image to report API
+ * Attach viewport image to report API.
+ * Uses getViewportImageAsBlob so the image includes the current viewport image,
+ * all canvas layers, and the SVG annotation layer (measurements, length tool, etc.).
+ * Note: Browser sends a CORS preflight OPTIONS request before this POST (due to
+ * Content-Type: application/json and Authorization). The server must respond to
+ * OPTIONS with 2xx and CORS headers (Allow: POST, OPTIONS; Access-Control-*)
+ * so the browser then sends the actual POST.
  */
 export async function attachViewportImageToReport(
   servicesManager: AppTypes.ServicesManager,

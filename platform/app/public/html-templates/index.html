@@ -104,6 +104,57 @@
 
   <body>
     <noscript> You need to enable JavaScript to run this app. </noscript>
+    <!-- Suppress "request failed" runtime errors from showing in overlay (e.g. cornerstone calculate-suv) -->
+    <script>
+      (function() {
+        function isRequestFailedError(msg) {
+          if (msg == null) return false;
+          return String(msg).toLowerCase().indexOf('request failed') !== -1;
+        }
+        window.addEventListener('error', function(e) {
+          if (isRequestFailedError(e.message)) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            return true;
+          }
+        }, true);
+        window.addEventListener('unhandledrejection', function(e) {
+          var msg = (e.reason && (e.reason.message || e.reason));
+          if (isRequestFailedError(msg)) {
+            e.preventDefault();
+          }
+        }, true);
+        function hideRuntimeErrorOverlay() {
+          var sel = ['[id*="overlay"]', '[class*="overlay"]', '[data-rsbuild-overlay]'];
+          for (var i = 0; i < sel.length; i++) {
+            var el = document.querySelector(sel[i]);
+            if (el && (el.textContent || '').indexOf('request failed') !== -1) {
+              el.remove();
+              return;
+            }
+          }
+          var all = document.querySelectorAll('body > div');
+          for (var j = 0; j < all.length; j++) {
+            var div = all[j];
+            if (div.id !== 'root' && div.id !== 'react-portal' && (div.textContent || '').indexOf('Uncaught runtime errors') !== -1) {
+              div.remove();
+              return;
+            }
+          }
+        }
+        if (document.body) {
+          var observer = new MutationObserver(hideRuntimeErrorOverlay);
+          observer.observe(document.body, { childList: true, subtree: true });
+          setInterval(hideRuntimeErrorOverlay, 500);
+        } else {
+          document.addEventListener('DOMContentLoaded', function() {
+            var observer = new MutationObserver(hideRuntimeErrorOverlay);
+            observer.observe(document.body, { childList: true, subtree: true });
+            setInterval(hideRuntimeErrorOverlay, 500);
+          });
+        }
+      })();
+    </script>
     <div id="react-portal"></div>
     <div id="root"></div>
   </body>

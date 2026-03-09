@@ -47,7 +47,6 @@ function ViewerHeader({ appConfig }: withAppTypes<{ appConfig: AppTypes.Config }
       await saveViewportData(servicesManager);
     } catch (error) {
       console.error('Failed to save viewport data:', error);
-      // You could show a toast notification here
     } finally {
       setIsSaving(false);
     }

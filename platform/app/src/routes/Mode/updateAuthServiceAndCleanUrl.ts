@@ -1,4 +1,19 @@
 /**
+ * Removes a query parameter from the current URL without reloading.
+ * @param location - The location object from the router.
+ * @param paramName - The query param name to remove.
+ */
+export function cleanQueryParamFromUrl(location: any, paramName: string): void {
+  if (!paramName) return;
+  const urlObj = new URL(window.location.origin + window.location.pathname + location.search);
+  urlObj.searchParams.delete(paramName);
+  const cleanUrl = urlObj.toString();
+  if (window.history?.replaceState) {
+    window.history.replaceState(null, '', cleanUrl);
+  }
+}
+
+/**
  * Updates the user authentication service with the provided token and cleans the token from the URL.
  * @param token - The token to set in the user authentication service.
  * @param location - The location object from the router.

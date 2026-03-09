@@ -107,3 +107,8 @@ export {
   createReportDialogPrompt,
   Toolbar,
 };
+export {
+  saveViewportData,
+  getViewportImageAsBlob,
+  attachViewportImageToReport,
+} from './utils/saveViewportData';

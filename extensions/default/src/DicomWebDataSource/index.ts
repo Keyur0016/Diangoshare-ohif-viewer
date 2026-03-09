@@ -355,6 +355,9 @@ function createDicomWebApi(dicomWebConfig: DicomWebConfig, servicesManager) {
       getWadoDicomWebClient: () => wadoDicomWebClient,
 
       bulkDataURI: async ({ StudyInstanceUID, BulkDataURI }) => {
+        if (!dicomWebConfig.bulkDataURI?.enabled) {
+          return undefined;
+        }
         qidoDicomWebClient.headers = getAuthorizationHeader();
 
         // Modify BulkDataURI to insert "ohif/" before "dicomweb" in the path

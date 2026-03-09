@@ -156,5 +156,9 @@
   "Shapes": "Shapes",
   "Create new segmentation to enable shapes tool.": "Create new segmentation to enable shapes tool.",
   "US Pleura B-line Annotation": "US Pleura B-line Annotation",
-  "Arrow Annotate Tool": "Arrow Annotate Tool"
+  "Arrow Annotate Tool": "Arrow Annotate Tool",
+  "Attach Image to Report": "Attach Image to Report",
+  "Image attached to report successfully": "Image attached to report successfully",
+  "Failed to attach image to report": "Failed to attach image to report",
+  "Report token not found": "Report token not found"
 }

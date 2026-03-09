@@ -6,10 +6,15 @@ var DICOMWEB_BASE_URL = 'https://stag-ohif-proxy.diagnoshare.com/ohif';
 /** Base URL for OHIF patient info API (fetch-patient-info). Uses same origin as DICOMWeb when not set. */
 var PATIENT_INFO_API_BASE_URL = DICOMWEB_BASE_URL;
 
+/** Base URL for attach-image API (report). No trailing slash. */
+var ATTACH_IMAGE_API_BASE_URL = 'https://stag-ohif-proxy.diagnoshare.com';
+
 window.config = {
   name: 'config/stag-config.js',
   /** Base URL for patient info API: GET {patientInfoApiBaseUrl}/fetch-patient-info?studyInstanceUID=... */
   patientInfoApiBaseUrl: PATIENT_INFO_API_BASE_URL,
+  /** Base URL for attach-image API: POST {attachImageApiBaseUrl}/api/attach-image/ */
+  attachImageApiBaseUrl: ATTACH_IMAGE_API_BASE_URL,
   routerBasename: '/',
   whiteLabeling: {
     createLogoComponentFn: function (React, props) {
@@ -85,7 +90,7 @@ window.config = {
         staticWado: true,
         singlepart: 'bulkdata,video',
         bulkDataURI: {
-          enabled: true,
+          enabled: false,
           relativeResolution: 'studies',
         },
         omitQuotationForMultipartRequest: true,
@@ -110,7 +115,7 @@ window.config = {
         staticWado: true,
         singlepart: 'bulkdata,video',
         bulkDataURI: {
-          enabled: true,
+          enabled: false,
           relativeResolution: 'studies',
         },
         omitQuotationForMultipartRequest: true,

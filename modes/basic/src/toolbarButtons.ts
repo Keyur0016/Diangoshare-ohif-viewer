@@ -621,6 +621,7 @@ const toolbarButtons: Button[] = [
     props: {
       icon: 'tool-capture',
       label: i18n.t('Buttons:Capture'),
+      tooltip: i18n.t('Buttons:Capture'),
       commands: 'showDownloadViewportModal',
       evaluate: [
         'evaluate.action',

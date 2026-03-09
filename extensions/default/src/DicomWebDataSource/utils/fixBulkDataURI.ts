@@ -35,18 +35,32 @@ function fixBulkDataURI(value, instance, dicomWebConfig) {
   if (!BulkDataURI.startsWith('http') && !value.BulkDataURI.startsWith('/')) {
     const { StudyInstanceUID, SeriesInstanceUID } = instance;
     const isInstanceStart = BulkDataURI.startsWith('instances/') || BulkDataURI.startsWith('../');
+
+    // Modify wadoRoot to insert "ohif/" before "dicomweb" for bulk data requests
+    let modifiedWadoRoot = dicomWebConfig.wadoRoot;
+    if (modifiedWadoRoot && typeof modifiedWadoRoot === 'string') {
+      // If wadoRoot contains "/dicomweb", insert "ohif/" before it
+      if (modifiedWadoRoot.includes('/dicomweb')) {
+        modifiedWadoRoot = modifiedWadoRoot.replace('/dicomweb', '/ohif/dicomweb');
+      }
+      // If wadoRoot ends with "dicomweb" (no trailing slash), add "/ohif/" before it
+      else if (modifiedWadoRoot.endsWith('dicomweb')) {
+        modifiedWadoRoot = modifiedWadoRoot.replace(/dicomweb$/, 'ohif/dicomweb');
+      }
+    }
+
     if (
       BulkDataURI.startsWith('series/') ||
       BulkDataURI.startsWith('bulkdata/') ||
       (uriConfig.relativeResolution === 'studies' && !isInstanceStart)
     ) {
-      value.BulkDataURI = `${dicomWebConfig.wadoRoot}/studies/${StudyInstanceUID}/${BulkDataURI}`;
+      value.BulkDataURI = `${modifiedWadoRoot}/studies/${StudyInstanceUID}/${BulkDataURI}`;
     } else if (
       isInstanceStart ||
       uriConfig.relativeResolution === 'series' ||
       !uriConfig.relativeResolution
     ) {
-      value.BulkDataURI = `${dicomWebConfig.wadoRoot}/studies/${StudyInstanceUID}/series/${SeriesInstanceUID}/${BulkDataURI}`;
+      value.BulkDataURI = `${modifiedWadoRoot}/studies/${StudyInstanceUID}/series/${SeriesInstanceUID}/${BulkDataURI}`;
     }
     return;
   }
@@ -58,9 +72,23 @@ function fixBulkDataURI(value, instance, dicomWebConfig) {
   // and in case of relative wado root, we need to prepend the bulkdata uri to the wado root (e.g,. bulkData: /bulk/1e
   // wado root: /dicomweb, output: /bulk/1e)
   if (BulkDataURI[0] === '/') {
+    // Modify BulkDataURI to insert "ohif/" before "dicomweb" if present
+    if (BulkDataURI.includes('/dicomweb/')) {
+      BulkDataURI = BulkDataURI.replace('/dicomweb/', '/ohif/dicomweb/');
+      value.BulkDataURI = BulkDataURI;
+    }
+
     if (dicomWebConfig.wadoRoot.startsWith('http')) {
       // Absolute wado root
-      const url = new URL(dicomWebConfig.wadoRoot);
+      // Modify wadoRoot to insert "ohif/" before "dicomweb" for bulk data requests
+      let modifiedWadoRoot = dicomWebConfig.wadoRoot;
+      if (modifiedWadoRoot.includes('/dicomweb')) {
+        modifiedWadoRoot = modifiedWadoRoot.replace('/dicomweb', '/ohif/dicomweb');
+      } else if (modifiedWadoRoot.endsWith('dicomweb')) {
+        modifiedWadoRoot = modifiedWadoRoot.replace(/dicomweb$/, 'ohif/dicomweb');
+      }
+
+      const url = new URL(modifiedWadoRoot);
       value.BulkDataURI = `${url.origin}${BulkDataURI}`;
     } else {
       // Relative wado root, we don't need to do anything, bulkdata uri is already correct

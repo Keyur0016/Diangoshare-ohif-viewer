@@ -16,7 +16,7 @@ import { retrieveStudyMetadata, deleteStudyMetadataPromise } from './retrieveStu
 import StaticWadoClient from './utils/StaticWadoClient';
 import getDirectURL from '../utils/getDirectURL';
 import { fixBulkDataURI } from './utils/fixBulkDataURI';
-import {HeadersInterface} from '@ohif/core/src/types/RequestHeaders';
+import { HeadersInterface } from '@ohif/core/src/types/RequestHeaders';
 
 const { DicomMetaDictionary, DicomDict } = dcmjs.data;
 
@@ -169,7 +169,7 @@ function createDicomWebApi(dicomWebConfig: DicomWebConfig, servicesManager) {
        */
       generateWadoHeader = (options: HeaderOptions): HeadersInterface => {
         const authorizationHeader = getAuthorizationHeader();
-        if (options?.includeTransferSyntax!==false) {
+        if (options?.includeTransferSyntax !== false) {
           //Generate accept header depending on config params
           const formattedAcceptHeader = utils.generateAcceptHeader(
             dicomWebConfig.acceptHeader,
@@ -186,7 +186,7 @@ function createDicomWebApi(dicomWebConfig: DicomWebConfig, servicesManager) {
           // which the server expects Accept: application/dicom+json will still include that in the
           // header.
           return {
-            ...authorizationHeader
+            ...authorizationHeader,
           };
         }
       };
@@ -356,12 +356,69 @@ function createDicomWebApi(dicomWebConfig: DicomWebConfig, servicesManager) {
 
       bulkDataURI: async ({ StudyInstanceUID, BulkDataURI }) => {
         qidoDicomWebClient.headers = getAuthorizationHeader();
+
+        // Modify BulkDataURI to insert "ohif/" before "dicomweb" in the path
+        // This changes /dicomweb/studies/... to /ohif/dicomweb/studies/...
+        let modifiedBulkDataURI = BulkDataURI;
+        if (modifiedBulkDataURI && typeof modifiedBulkDataURI === 'string') {
+          // Handle full URL case: https://stag-ohif-proxy.diagnoshare.com/dicomweb/...
+          if (
+            modifiedBulkDataURI.startsWith('http') &&
+            modifiedBulkDataURI.includes('/dicomweb/')
+          ) {
+            modifiedBulkDataURI = modifiedBulkDataURI.replace('/dicomweb/', '/ohif/dicomweb/');
+          }
+          // If BulkDataURI contains "/dicomweb/", insert "ohif/" before "dicomweb"
+          else if (modifiedBulkDataURI.includes('/dicomweb/')) {
+            modifiedBulkDataURI = modifiedBulkDataURI.replace('/dicomweb/', '/ohif/dicomweb/');
+          }
+          // If BulkDataURI starts with "dicomweb/", add "ohif/" before it
+          else if (modifiedBulkDataURI.startsWith('dicomweb/')) {
+            modifiedBulkDataURI = `ohif/${modifiedBulkDataURI}`;
+          }
+          // If BulkDataURI starts with "/dicomweb/", add "/ohif" before "/dicomweb"
+          else if (modifiedBulkDataURI.startsWith('/dicomweb/')) {
+            modifiedBulkDataURI = modifiedBulkDataURI.replace('/dicomweb/', '/ohif/dicomweb/');
+          }
+        }
+
+        let modifiedWadoRoot = dicomWebConfig.wadoRoot;
+        if (modifiedWadoRoot && typeof modifiedWadoRoot === 'string') {
+          // If wadoRoot ends with "/ohif" and doesn't have "/dicomweb", add "/dicomweb"
+          if (modifiedWadoRoot.endsWith('/ohif') && !modifiedWadoRoot.includes('/dicomweb')) {
+            modifiedWadoRoot = `${modifiedWadoRoot}/dicomweb`;
+          }
+          // If wadoRoot contains "/dicomweb", ensure "ohif/" is before it
+          else if (modifiedWadoRoot.includes('/dicomweb')) {
+            if (!modifiedWadoRoot.includes('/ohif/dicomweb')) {
+              modifiedWadoRoot = modifiedWadoRoot.replace('/dicomweb', '/ohif/dicomweb');
+            }
+          }
+          // If wadoRoot ends with "dicomweb" (no trailing slash), add "/ohif/" before it
+          else if (modifiedWadoRoot.endsWith('dicomweb')) {
+            modifiedWadoRoot = modifiedWadoRoot.replace(/dicomweb$/, 'ohif/dicomweb');
+          }
+        }
+
+        // Create a temporary client with modified wadoRoot for this request
+        const tempConfig = {
+          url: modifiedWadoRoot,
+          staticWado: dicomWebConfig.staticWado,
+          singlepart: dicomWebConfig.singlepart,
+          headers: getAuthorizationHeader(),
+          errorInterceptor: errorHandler.getHTTPErrorHandler(),
+          supportsFuzzyMatching: dicomWebConfig.supportsFuzzyMatching,
+        };
+        const tempClient = dicomWebConfig.staticWado
+          ? new StaticWadoClient(tempConfig)
+          : new api.DICOMwebClient(tempConfig);
+
         const options = {
           multipart: false,
-          BulkDataURI,
+          BulkDataURI: modifiedBulkDataURI,
           StudyInstanceUID,
         };
-        return qidoDicomWebClient.retrieveBulkData(options).then(val => {
+        return tempClient.retrieveBulkData(options).then(val => {
           const ret = (val && val[0]) || undefined;
           return ret;
         });
@@ -732,19 +789,83 @@ function createDicomWebApi(dicomWebConfig: DicomWebConfig, servicesManager) {
  */
 function retrieveBulkData(value, options = {}) {
   const { mediaType } = options;
+
+  // Modify BulkDataURI to insert "ohif/" before "dicomweb" in the path
+  let modifiedBulkDataURI = value.BulkDataURI;
+  if (modifiedBulkDataURI && typeof modifiedBulkDataURI === 'string') {
+    // Handle full URL case: https://stag-ohif-proxy.diagnoshare.com/dicomweb/...
+    if (modifiedBulkDataURI.startsWith('http') && modifiedBulkDataURI.includes('/dicomweb/')) {
+      modifiedBulkDataURI = modifiedBulkDataURI.replace('/dicomweb/', '/ohif/dicomweb/');
+    }
+    // If BulkDataURI contains "/dicomweb/", insert "ohif/" before "dicomweb"
+    else if (modifiedBulkDataURI.includes('/dicomweb/')) {
+      modifiedBulkDataURI = modifiedBulkDataURI.replace('/dicomweb/', '/ohif/dicomweb/');
+    }
+    // If BulkDataURI starts with "dicomweb/", add "ohif/" before it
+    else if (modifiedBulkDataURI.startsWith('dicomweb/')) {
+      modifiedBulkDataURI = `ohif/${modifiedBulkDataURI}`;
+    }
+    // If BulkDataURI starts with "/dicomweb/", add "/ohif" before "/dicomweb"
+    else if (modifiedBulkDataURI.startsWith('/dicomweb/')) {
+      modifiedBulkDataURI = modifiedBulkDataURI.replace('/dicomweb/', '/ohif/dicomweb/');
+    }
+  }
+
+  // Also modify the client's base URL to insert "ohif/" before "dicomweb"
+  let modifiedUrl = this.url;
+  if (modifiedUrl && typeof modifiedUrl === 'string') {
+    // If url contains "/dicomweb", insert "ohif/" before it
+    if (modifiedUrl.includes('/dicomweb')) {
+      modifiedUrl = modifiedUrl.replace('/dicomweb', '/ohif/dicomweb');
+    }
+    // If url ends with "dicomweb" (no trailing slash), add "/ohif/" before it
+    else if (modifiedUrl.endsWith('dicomweb')) {
+      modifiedUrl = modifiedUrl.replace(/dicomweb$/, 'ohif/dicomweb');
+    }
+
+    // Temporarily modify the client's URL for this request
+    const originalUrl = this.url;
+    this.url = modifiedUrl;
+
+    const useOptions = {
+      // The bulkdata fetches work with either multipart or
+      // singlepart, so set multipart to false to let the server
+      // decide which type to respond with.
+      multipart: false,
+      BulkDataURI: modifiedBulkDataURI,
+      mediaTypes: mediaType
+        ? [{ mediaType }, { mediaType: 'application/octet-stream' }]
+        : undefined,
+      ...options,
+    };
+
+    return this.retrieveBulkData(useOptions)
+      .then(val => {
+        // Restore original URL
+        this.url = originalUrl;
+        // There are DICOM PDF cases where the first ArrayBuffer in the array is
+        // the bulk data and DICOM video cases where the second ArrayBuffer is
+        // the bulk data. Here we play it safe and do a find.
+        const ret =
+          (val instanceof Array && val.find(arrayBuffer => arrayBuffer?.byteLength)) || undefined;
+        value.Value = ret;
+        return ret;
+      })
+      .catch(error => {
+        // Restore original URL on error
+        this.url = originalUrl;
+        throw error;
+      });
+  }
+
+  // Fallback to original behavior if URL modification fails
   const useOptions = {
-    // The bulkdata fetches work with either multipart or
-    // singlepart, so set multipart to false to let the server
-    // decide which type to respond with.
     multipart: false,
-    BulkDataURI: value.BulkDataURI,
+    BulkDataURI: modifiedBulkDataURI,
     mediaTypes: mediaType ? [{ mediaType }, { mediaType: 'application/octet-stream' }] : undefined,
     ...options,
   };
   return this.retrieveBulkData(useOptions).then(val => {
-    // There are DICOM PDF cases where the first ArrayBuffer in the array is
-    // the bulk data and DICOM video cases where the second ArrayBuffer is
-    // the bulk data. Here we play it safe and do a find.
     const ret =
       (val instanceof Array && val.find(arrayBuffer => arrayBuffer?.byteLength)) || undefined;
     value.Value = ret;
